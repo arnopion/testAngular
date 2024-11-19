@@ -1,38 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Store } from '@ngrx/store';
 
-import { selectUsers } from './state/users.selectors';
-import { UsersActions, UserApiActions } from './state/users.actions';
 import { UsersService } from './state/users.service';
-import { Observable } from 'rxjs';
-import { User } from './shared/user.model';
-import { HttpClientModule } from '@angular/common/http';
+import { LayoutComponent } from "./layout-template/layout/layout.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HttpClientModule],
+  imports: [RouterOutlet, LayoutComponent],
   providers: [UsersService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
-  users$: Observable<readonly User[]> | undefined;
+export class AppComponent {
+  constructor() { }
 
-  constructor(private usersService: UsersService, private store: Store) { }
+  // users$: Observable<readonly User[]> | undefined;
+  // sidebarVisible = false;
 
-  onAdd(userId: string) {
-    this.store.dispatch(UsersActions.addUser({ userId }));
-  }
+  // constructor(private usersService: UsersService, private store: Store) { }
 
-  ngOnInit() {
-    this.users$ = this.store.select(selectUsers);
+  // onAdd(userId: string) {
+  //   this.store.dispatch(UsersActions.addUser({ userId }));
+  // }
 
-    this.usersService
-      .getUsers()
-      .subscribe((users) =>
-        this.store.dispatch(UserApiActions.retrievedUserList({ users }))
-      );
-  }
+  // ngOnInit() {
+  //   this.users$ = this.store.select(selectUsers);
+
+  //   this.usersService
+  //     .getUsers()
+  //     .subscribe((users) =>
+  //       this.store.dispatch(UserApiActions.retrievedUserList({ users }))
+  //     );
+  // }
 }
