@@ -2,10 +2,10 @@
     [rowsPerPageOptions]="[5, 10, 20]">
     <ng-template pTemplate="header">
         <tr>
-            <th style="width:25%">Id</th>
-            <th style="width:25%">firstName</th>
-            <th style="width:25%">lastName</th>
-            <th style="width:25%">Email</th>
+            <th>Id</th>
+            <th>firstName</th>
+            <th>lastName</th>
+            <th>Email</th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-user>
@@ -17,3 +17,7 @@
         </tr>
     </ng-template>
 </p-table>
+<!-- <div *ngIf="user$ | async as user;">
+    <h1>{{ user.firstName }}</h1>
+    <p>{{ user.email }}</p>
+</div> -->

@@ -3,8 +3,7 @@ import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
 import { User } from '../../shared/user.model';
 import { UsersActions, UserApiActions } from '../../state/users.actions';
-import { selectUsers } from '../../state/users.selectors';
-import { UsersService } from '../../state/users.service';
+import { selectUserById, selectUsers } from '../../state/users.selectors';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 
@@ -17,8 +16,9 @@ import { CommonModule } from '@angular/common';
 })
 export class ListComponent implements OnInit {
   users$!: Observable<User[]>;
+  user$!: Observable<User | undefined>;
 
-  constructor(private usersService: UsersService, private store: Store) { }
+  constructor(private store: Store) { }
 
   onAdd(userId: string) {
     this.store.dispatch(UsersActions.addUser({ userId }));
@@ -26,6 +26,7 @@ export class ListComponent implements OnInit {
 
   ngOnInit() {
     this.store.dispatch(UserApiActions.retrieveUserList());
+    // this.user$ = this.store.select(selectUserById(1));
 
     this.users$ = this.store.select(selectUsers).pipe(
       map(users => users || [])

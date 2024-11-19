@@ -4,9 +4,6 @@ import { usersFeatureKey } from './users.reducers';
 
 export const selectUsers = createFeatureSelector<Array<User>>(usersFeatureKey);
 
-export const selectUserById = createSelector(
-    selectUsers,
-    (users: Array<User>, id: string) => {      
-        return users.find(user => user.id === id);
-    }
-);
+export const selectUserById = (id: number) => createSelector(selectUsers, (users) => {
+    return users.find(user => user.id === id);
+});
