@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, TableModule],
   templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss'], // Fixed typo here
+  styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnInit {
   users$!: Observable<User[]>;
@@ -25,14 +25,10 @@ export class ListComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.store.dispatch(UserApiActions.retrieveUserList());
+
     this.users$ = this.store.select(selectUsers).pipe(
       map(users => users || [])
-    )
-
-    this.usersService
-      .getUsers()
-      .subscribe((users) =>
-        this.store.dispatch(UserApiActions.retrievedUserList({ users }))
-      );
+    );
   }
 }

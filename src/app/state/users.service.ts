@@ -10,10 +10,6 @@ export class UsersService {
     constructor(private http: HttpClient) { }
 
     getUsers(): Observable<Array<User>> {
-        return this.http
-            .get<{ items: User[] }>(
-                'http://localhost:8080/api/v1/users'
-            )
-            .pipe(map((users) => users.items || []));
+        return this.http.get<User[]>('http://localhost:8080/api/v1/users');
     }
 }

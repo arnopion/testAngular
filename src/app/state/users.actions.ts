@@ -1,4 +1,4 @@
-import { createActionGroup, props } from '@ngrx/store';
+import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { User } from '../shared/user.model';
 
 export const UsersActions = createActionGroup({
@@ -11,6 +11,8 @@ export const UsersActions = createActionGroup({
 export const UserApiActions = createActionGroup({
     source: 'Users API',
     events: {
-        'Retrieved User List': props<{ users: ReadonlyArray<User> }>(),
+        'Retrieve User List': emptyProps(),
+        'Retrieve User List Success': props<{ users: User[] }>(),
+        'Retrieve User List Failure': props<{ errorMsg: string }>(),
     },
 });
