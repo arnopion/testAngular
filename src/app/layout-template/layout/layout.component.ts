@@ -11,4 +11,8 @@ import { ButtonModule } from 'primeng/button';
 })
 export class LayoutComponent {
   sidebarVisible = false;
+
+  closeCallback(event: any) {
+    this.sidebarVisible = false;
+  }
 }
