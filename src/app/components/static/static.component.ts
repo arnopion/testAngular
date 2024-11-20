@@ -11,6 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-static',
@@ -22,7 +23,8 @@ import { InputTextModule } from 'primeng/inputtext';
     TooltipModule,
     IconFieldModule,
     InputIconModule,
-    InputTextModule
+    InputTextModule,
+    DialogModule
   ],
   templateUrl: './static.component.html',
   styleUrl: './static.component.scss'
@@ -31,6 +33,7 @@ export class StaticComponent {
   reports$!: Observable<Rapport[]>;
   report$!: Observable<Rapport | undefined>;
   loading: boolean = false;
+  visible: boolean = false;
 
   constructor(private store: Store) { }
 
