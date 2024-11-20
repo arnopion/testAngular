@@ -8,7 +8,7 @@ import { Rapport } from '../model/report.model';
 export class UsersService {
     constructor(private http: HttpClient) { }
 
-    getUsers(): Observable<Array<Rapport>> {
-        return this.http.get<Rapport[]>('http://localhost:8080/api/v1/users');
+    getReports(): Observable<Array<Rapport>> {
+        return this.http.get<Rapport[]>('http://localhost:8080/api/v1/reports');
     }
 }

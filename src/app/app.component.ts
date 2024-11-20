@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { LayoutComponent } from "./layout/layout.component";
-import { UsersService } from './shared/services/users.service';
+import { UsersService } from './shared/services/report.service';
 
 @Component({
   selector: 'app-root',

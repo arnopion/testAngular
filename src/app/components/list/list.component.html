@@ -8,7 +8,7 @@
 
     dataKey="id"
     [loading]="loading"
-    [globalFilterFields]="['id', 'firstName', 'lastName', 'email']"
+    [globalFilterFields]="['rType', 'reference', 'label', 'amountPrinted', 'creationYear']"
 >
     <ng-template pTemplate="caption">
         <div class="flex flex-row justify-content-between">
@@ -27,56 +27,67 @@
     </ng-template>
     <ng-template pTemplate="header">
         <tr>
-            <th>ID</th>
-            <th>Prénom</th>
-            <th>Nom de famille</th>
-            <th>Email</th>
+            <th>Type</th>
+            <th>Référence</th>
+            <th>Libellé</th>
+            <th>Nombres d'impressions</th>
+            <th>Année de création</th>
         </tr>
         <tr>
             <th>
                 <p-columnFilter 
                     type="text" 
-                    field="id" 
+                    field="rType" 
                     matchMode="contains"
-                    placeholder="Filtrer par ID"
-                    ariaLabel="Filter ID"
+                    placeholder="Filtrer par type"
+                    ariaLabel="Filtrer type"
                 />
             </th>
             <th>
                 <p-columnFilter 
                     type="text" 
-                    field="firstName" 
+                    field="reference" 
                     matchMode="contains" 
-                    placeholder="Filtrer par nom" 
-                    ariaLabel="Filter first name" 
+                    placeholder="Filtrer par reference" 
+                    ariaLabel="Filter reference" 
                 />
             </th>
             <th>
                 <p-columnFilter 
                     type="text" 
-                    field="lastName" 
+                    field="label" 
                     matchMode="contains" 
-                    placeholder="Filtrer par nom de famille" 
+                    placeholder="Filtrer par libellé" 
                     ariaLabel="Filter last name" 
                 />
             </th>
             <th>
                 <p-columnFilter
                     type="text"
-                    field="email"
+                    field="amountPrinted"
                     matchMode="contains"
-                    placeholder="Filtrer par email"
-                    ariaLabel="Filter Email"
+                    placeholder="Filtrer par impressions"
+                    ariaLabel="Filter impressions"
+                />
+            </th>
+            <th>
+                <p-columnFilter
+                    type="text"
+                    field="creationYear"
+                    matchMode="contains"
+                    placeholder="Filtrer par année"
+                    ariaLabel="Filter year"
                 />
             </th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-user>
         <tr *ngIf="user">
-            <td>{{ user.id }}</td>
-            <td>{{ user.firstName }}</td>
-            <td>{{ user.lastName }}</td>
-            <td>{{ user.email }}</td>
+            <td>{{ user.rType }}</td>
+            <td>{{ user.reference }}</td>
+            <td>{{ user.label }}</td>
+            <td>{{ user.amountPrinted }}</td>
+            <td>{{ user.creationYear }}</td>
         </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
