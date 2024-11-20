@@ -30,18 +30,18 @@ import autoTable from 'jspdf-autotable';
   styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnInit {
-  users$!: Observable<Rapport[]>;
-  user$!: Observable<Rapport | undefined>;
+  reports$!: Observable<Rapport[]>;
+  report$!: Observable<Rapport | undefined>;
   loading: boolean = false;
 
   constructor(private store: Store) { }
 
   ngOnInit() {
     this.store.dispatch(ReportApiActions.retrieveReportList());
-    // this.user$ = this.store.select(selectUserById(1));
+    // this.report$ = this.store.select(selectReportById(1));
 
-    this.users$ = this.store.select(selectReports).pipe(
-      map(users => users || [])
+    this.reports$ = this.store.select(selectReports).pipe(
+      map(reports => reports || [])
     );
   }
 

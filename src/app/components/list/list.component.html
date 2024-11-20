@@ -1,6 +1,6 @@
 <p-table 
     #dt2 
-    [value]="(users$ | async) || []" 
+    [value]="(reports$ | async) || []" 
     [paginator]="true" 
     [rows]="5" 
     [tableStyle]="{ 'min-width': '50rem' }"
@@ -81,13 +81,13 @@
             </th>
         </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-user>
-        <tr *ngIf="user">
-            <td>{{ user.rType }}</td>
-            <td>{{ user.reference }}</td>
-            <td>{{ user.label }}</td>
-            <td>{{ user.amountPrinted }}</td>
-            <td>{{ user.creationYear }}</td>
+    <ng-template pTemplate="body" let-report>
+        <tr *ngIf="report">
+            <td>{{ report.rType }}</td>
+            <td>{{ report.reference }}</td>
+            <td>{{ report.label }}</td>
+            <td>{{ report.amountPrinted }}</td>
+            <td>{{ report.creationYear }}</td>
         </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
@@ -96,7 +96,6 @@
         </tr>
     </ng-template>
 </p-table>
-<!-- <div *ngIf="user$ | async as user;">
-    <h1>{{ user.firstName }}</h1>
-    <p>{{ user.email }}</p>
+<!-- <div *ngIf="report$ | async as report;">
+    <h1>{{ report.label }}</h1>
 </div> -->

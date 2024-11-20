@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { Rapport } from '../model/report.model';
 
 @Injectable({ providedIn: 'root' })
-export class UsersService {
+export class ReportsService {
     constructor(private http: HttpClient) { }
 
     getReports(): Observable<Array<Rapport>> {
