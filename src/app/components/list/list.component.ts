@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
 import { Rapport } from '../../shared/model/report.model';
 import { ReportApiActions } from '../../state/users.actions';
-import { selectUserById, selectUsers } from '../../state/users.selectors';
+import { selectReportById, selectReports } from '../../state/users.selectors';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -40,7 +40,7 @@ export class ListComponent implements OnInit {
     this.store.dispatch(ReportApiActions.retrieveReportList());
     // this.user$ = this.store.select(selectUserById(1));
 
-    this.users$ = this.store.select(selectUsers).pipe(
+    this.users$ = this.store.select(selectReports).pipe(
       map(users => users || [])
     );
   }

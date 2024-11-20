@@ -10,7 +10,7 @@ export const loadActors = createEffect(
             ofType(ReportApiActions.retrieveReportList),
             exhaustMap(() =>
                 usersService.getReports().pipe(
-                    map((users) => ReportApiActions.retrieveReportListSuccess({ users })),
+                    map((reports) => ReportApiActions.retrieveReportListSuccess({ reports })),
                     catchError((error: { message: string }) =>
                         of(ReportApiActions.retrieveReportListFailure({ errorMsg: error.message }))
                     )

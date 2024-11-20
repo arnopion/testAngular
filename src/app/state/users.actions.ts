@@ -12,7 +12,7 @@ export const ReportApiActions = createActionGroup({
     source: 'Reports API',
     events: {
         'Retrieve Report List': emptyProps(),
-        'Retrieve Report List Success': props<{ users: Rapport[] }>(),
+        'Retrieve Report List Success': props<{ reports: Rapport[] }>(),
         'Retrieve Report List Failure': props<{ errorMsg: string }>(),
     },
 });
