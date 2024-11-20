@@ -73,4 +73,40 @@ export class ListComponent implements OnInit {
     });
     pdf.save('liste-de-liste.pdf');
   }
+
+  generateCSV() {
+    // Select the table body
+    const tableBody = document.querySelector('p-table tbody');
+
+    if (!tableBody) {
+      console.error('Table body not found');
+      return;
+    }
+
+    // Extract data from the table rows
+    const rows = Array.from(tableBody.querySelectorAll('tr')).map(row =>
+      Array.from(row.querySelectorAll('td')).map(cell => cell.textContent?.trim() || '')
+    );
+
+    // Extract headers from the table
+    const tableHeader = document.querySelector('p-table thead');
+    const headers = tableHeader
+      ? Array.from(tableHeader.querySelectorAll('th')).map(th => th.textContent?.trim() || '')
+      : [];
+
+    // Prepare CSV content
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(',')) // Add double quotes to handle special characters
+      .join('\n');
+
+    // Create a blob and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'list-of-reports.csv';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
