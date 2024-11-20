@@ -1,13 +1,13 @@
 import { createReducer, on } from '@ngrx/store';
 import { Rapport } from '../shared/model/report.model';
-import { UserApiActions } from './users.actions';
+import { ReportApiActions } from './users.actions';
 
 export const usersFeatureKey = 'users';
 export const initialState: ReadonlyArray<Rapport> = [];
 
-export const usersReducer = createReducer(
+export const reportsReducer = createReducer(
     initialState,
-    on(UserApiActions.retrieveUserListSuccess, (_state, { users }) => {
+    on(ReportApiActions.retrieveReportListSuccess, (_state, { users }) => {
         return users;
     }),
 );

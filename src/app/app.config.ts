@@ -6,7 +6,7 @@ import { provideState, provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { usersFeatureKey, usersReducer } from './state/users.reducers';
+import { usersFeatureKey, reportsReducer } from './state/users.reducers';
 import { provideEffects } from '@ngrx/effects';
 import * as usersEffects from './state/users.effects';
 
@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideStore(),
-    provideState({ name: usersFeatureKey, reducer: usersReducer }),
+    provideState({ name: usersFeatureKey, reducer: reportsReducer }),
     provideEffects(usersEffects),
     provideStoreDevtools({
       maxAge: 25,

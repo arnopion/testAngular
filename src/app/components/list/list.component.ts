@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
 import { Rapport } from '../../shared/model/report.model';
-import { UsersActions, UserApiActions } from '../../state/users.actions';
+import { ReportApiActions } from '../../state/users.actions';
 import { selectUserById, selectUsers } from '../../state/users.selectors';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -36,16 +36,8 @@ export class ListComponent implements OnInit {
 
   constructor(private store: Store) { }
 
-  onAdd(userId: string) {
-    this.store.dispatch(UsersActions.addUser({ userId }));
-  }
-
-  testt($event: any){
-    console.log($event);
-  }
-
   ngOnInit() {
-    this.store.dispatch(UserApiActions.retrieveUserList());
+    this.store.dispatch(ReportApiActions.retrieveReportList());
     // this.user$ = this.store.select(selectUserById(1));
 
     this.users$ = this.store.select(selectUsers).pipe(
