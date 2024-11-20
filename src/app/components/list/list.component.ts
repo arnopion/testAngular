@@ -11,6 +11,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-list',
@@ -49,5 +51,34 @@ export class ListComponent implements OnInit {
     this.users$ = this.store.select(selectUsers).pipe(
       map(users => users || [])
     );
+  }
+
+  generatePDF() {
+    // Select the table body element
+    const tableBody = document.querySelector('p-table tbody');
+
+    if (!tableBody) {
+      console.error('Table body not found');
+      return;
+    }
+
+    // Extract data from the table rows
+    const rows = Array.from(tableBody.querySelectorAll('tr')).map(row =>
+      Array.from(row.querySelectorAll('td')).map(cell => cell.textContent?.trim() || '')
+    );
+
+    // Extract header from table
+    const tableHeader = document.querySelector('p-table thead');
+    const headers = tableHeader
+      ? Array.from(tableHeader.querySelectorAll('th')).map(th => th.textContent?.trim() || '')
+      : [];
+
+    // create & save pdf
+    const pdf = new jsPDF();
+    autoTable(pdf, {
+      head: [headers],
+      body: rows,
+    });
+    pdf.save('liste-de-liste.pdf');
   }
 }
