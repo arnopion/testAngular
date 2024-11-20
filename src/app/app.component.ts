@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { LayoutComponent } from "./layout-template/layout/layout.component";
+import { LayoutComponent } from "./layout/layout.component";
 import { UsersService } from './shared/services/users.service';
 
 @Component({
@@ -14,23 +14,4 @@ import { UsersService } from './shared/services/users.service';
 })
 export class AppComponent {
   constructor() { }
-
-  // users$: Observable<readonly User[]> | undefined;
-  // sidebarVisible = false;
-
-  // constructor(private usersService: UsersService, private store: Store) { }
-
-  // onAdd(userId: string) {
-  //   this.store.dispatch(UsersActions.addUser({ userId }));
-  // }
-
-  // ngOnInit() {
-  //   this.users$ = this.store.select(selectUsers);
-
-  //   this.usersService
-  //     .getUsers()
-  //     .subscribe((users) =>
-  //       this.store.dispatch(UserApiActions.retrievedUserList({ users }))
-  //     );
-  // }
 }

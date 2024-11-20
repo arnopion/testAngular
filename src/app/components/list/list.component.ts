@@ -8,22 +8,38 @@ import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TooltipModule],
+  imports: [
+    CommonModule, 
+    TableModule, 
+    ButtonModule, 
+    TooltipModule, 
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule
+  ],
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnInit {
   users$!: Observable<User[]>;
   user$!: Observable<User | undefined>;
+  loading: boolean = false;
 
   constructor(private store: Store) { }
 
   onAdd(userId: string) {
     this.store.dispatch(UsersActions.addUser({ userId }));
+  }
+
+  testt($event: any){
+    console.log($event);
   }
 
   ngOnInit() {
