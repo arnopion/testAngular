@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { User } from '../shared/user.model';
+import { User } from '../shared/model/user.model';
 import { UserApiActions } from './users.actions';
 
 export const usersFeatureKey = 'users';

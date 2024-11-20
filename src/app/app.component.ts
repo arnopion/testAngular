@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { UsersService } from './state/users.service';
 import { LayoutComponent } from "./layout-template/layout/layout.component";
+import { UsersService } from './shared/services/users.service';
 
 @Component({
   selector: 'app-root',

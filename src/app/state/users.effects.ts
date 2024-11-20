@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
 import { catchError, exhaustMap, map, of, tap } from 'rxjs';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { UsersService } from './users.service';
 import { UserApiActions } from './users.actions';
+import { UsersService } from '../shared/services/users.service';
 
 export const loadActors = createEffect(
     (actions$ = inject(Actions), usersService = inject(UsersService)) => {
