@@ -1,1 +1,69 @@
-<p>hybrid works!</p>
+<p-table #dt2 [value]="(reports$ | async) || []" [paginator]="true" [rows]="5" [tableStyle]="{ 'min-width': '50rem' }"
+    [rowsPerPageOptions]="[5, 10, 20]" dataKey="id" [loading]="loading"
+    [globalFilterFields]="['rType', 'reference', 'label', 'amountPrinted', 'creationYear']">
+    <ng-template pTemplate="caption">
+        <div class="flex flex-row justify-content-between">
+            <div class="flex flex-row gap-2">
+                <p-button (click)="generatePDF()" severity="warning" icon="pi pi-file-export" pTooltip="Exporter en pdf"
+                    placeholder="Bottom"></p-button>
+                <p-button (click)="generateCSV()" severity="success" icon="pi pi-file-export" pTooltip="Exporter en csv"
+                    placeholder="Bottom"></p-button>
+            </div>
+            <p-iconField iconPosition="left" class="ml-auto">
+                <p-inputIcon>
+                    <i class="pi pi-search"></i>
+                </p-inputIcon>
+                <input pInputText type="text" (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
+                    placeholder="Rechercher" />
+            </p-iconField>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Type</th>
+            <th>Référence</th>
+            <th>Libellé</th>
+            <th>Nombres d'impressions</th>
+            <th>Année de création</th>
+        </tr>
+        <tr>
+            <th>
+                <p-columnFilter type="text" field="rType" matchMode="contains" placeholder="Filtrer par type"
+                    ariaLabel="Filtrer type" />
+            </th>
+            <th>
+                <p-columnFilter type="text" field="reference" matchMode="contains" placeholder="Filtrer par reference"
+                    ariaLabel="Filter reference" />
+            </th>
+            <th>
+                <p-columnFilter type="text" field="label" matchMode="contains" placeholder="Filtrer par libellé"
+                    ariaLabel="Filter last name" />
+            </th>
+            <th>
+                <p-columnFilter type="text" field="amountPrinted" matchMode="contains"
+                    placeholder="Filtrer par impressions" ariaLabel="Filter impressions" />
+            </th>
+            <th>
+                <p-columnFilter type="text" field="creationYear" matchMode="contains" placeholder="Filtrer par année"
+                    ariaLabel="Filter year" />
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-report>
+        <tr *ngIf="report">
+            <td>{{ report.rType }}</td>
+            <td>{{ report.reference }}</td>
+            <td>{{ report.label }}</td>
+            <td>{{ report.amountPrinted }}</td>
+            <td>{{ report.creationYear }}</td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="5">Aucune donnée trouvée.</td>
+        </tr>
+    </ng-template>
+</p-table>
+<!-- <div *ngIf="report$ | async as report;">
+    <h1>{{ report.label }}</h1>
+</div> -->

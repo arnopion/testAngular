@@ -1,1 +1,11 @@
-<p>static works!</p>
+<div class="flex flex-row justify-content-between">
+    <div class="flex flex-row gap-2">
+        <p-button (click)="generatePDF()" severity="warning" icon="pi pi-file-export" pTooltip="Exporter en pdf"
+            placeholder="Bottom"></p-button>
+        <p-button (click)="generateCSV()" severity="success" icon="pi pi-file-export" pTooltip="Exporter en csv"
+            placeholder="Bottom"></p-button>
+    </div>
+</div>
+<div *ngIf="report$ | async as report;">
+    <h1>{{ report.label }}</h1>
+</div>
