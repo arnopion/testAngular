@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
-import { User } from '../../shared/model/user.model';
+import { Rapport } from '../../shared/model/user.model';
 import { UsersActions, UserApiActions } from '../../state/users.actions';
 import { selectUserById, selectUsers } from '../../state/users.selectors';
 import { TableModule } from 'primeng/table';
@@ -30,8 +30,8 @@ import autoTable from 'jspdf-autotable';
   styleUrls: ['./list.component.scss'],
 })
 export class ListComponent implements OnInit {
-  users$!: Observable<User[]>;
-  user$!: Observable<User | undefined>;
+  users$!: Observable<Rapport[]>;
+  user$!: Observable<Rapport | undefined>;
   loading: boolean = false;
 
   constructor(private store: Store) { }

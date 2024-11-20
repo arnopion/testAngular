@@ -1,8 +1,8 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { User } from '../shared/model/user.model';
+import { Rapport } from '../shared/model/user.model';
 import { usersFeatureKey } from './users.reducers';
 
-export const selectUsers = createFeatureSelector<Array<User>>(usersFeatureKey);
+export const selectUsers = createFeatureSelector<Array<Rapport>>(usersFeatureKey);
 
 export const selectUserById = (id: number) => createSelector(selectUsers, (users) => {
     return users.find(user => user.id === id);

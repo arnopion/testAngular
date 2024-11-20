@@ -1,4 +1,4 @@
-export interface User {
+export interface Rapport {
     id: number;
     firstName: string;
     lastName: string;
