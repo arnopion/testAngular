@@ -1,6 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 import { Rapport } from '../shared/model/report.model';
-import { reportsFeatureKey } from './users.reducers';
+import { reportsFeatureKey } from './reports.reducers';
 
 export const selectReports = createFeatureSelector<Array<Rapport>>(reportsFeatureKey);
 

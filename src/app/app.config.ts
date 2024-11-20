@@ -6,9 +6,9 @@ import { provideState, provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { reportsFeatureKey, reportsReducer } from './state/users.reducers';
+import { reportsFeatureKey, reportsReducer } from './state/reports.reducers';
 import { provideEffects } from '@ngrx/effects';
-import * as usersEffects from './state/users.effects';
+import * as reportsEffects from './state/reports.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideStore(),
     provideState({ name: reportsFeatureKey, reducer: reportsReducer }),
-    provideEffects(usersEffects),
+    provideEffects(reportsEffects),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

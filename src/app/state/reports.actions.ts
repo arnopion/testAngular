@@ -1,10 +1,10 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { Rapport } from '../shared/model/report.model';
 
-// export const UsersActions = createActionGroup({
+// export const ReportsActions = createActionGroup({
 //     source: 'Reports',
 //     events: {
-//         'Add Report': props<{ userId: string }>(),
+//         'Add Report': props<{ reportId: string }>(),
 //     },
 // });
 
