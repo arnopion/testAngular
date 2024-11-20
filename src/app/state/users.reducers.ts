@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { Rapport } from '../shared/model/user.model';
+import { Rapport } from '../shared/model/report.model';
 import { UserApiActions } from './users.actions';
 
 export const usersFeatureKey = 'users';
