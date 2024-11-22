@@ -13,3 +13,11 @@ export const selectReportsList = createSelector(
 export const selectReportById = (id: number) => createSelector(selectReportFeature, (state: ReportsState) => {
     return state.reports.find(report => report.id === id);
 });
+
+export const selectReportHtml = createSelector(selectReportFeature, (state: ReportsState) => {
+    return state.html
+})
+
+export const selectReportBlob = createSelector(selectReportFeature, (state: ReportsState) => {
+    return state.blob
+})

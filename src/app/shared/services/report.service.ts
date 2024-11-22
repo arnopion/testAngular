@@ -8,7 +8,15 @@ import { Rapport } from '../model/report.model';
 export class ReportsService {
     constructor(private http: HttpClient) { }
 
+    downloadReport(reportId: number) {
+        return this.http.get('http://localhost:8080/api/v1/flyingsaucer/pdf/' + reportId, { responseType: 'blob' });
+    }
+    
     getReports(): Observable<Array<Rapport>> {
         return this.http.get<Rapport[]>('http://localhost:8080/api/v1/reports');
+    }
+
+    getHtmlReport(reportId: number) {
+        return this.http.get('http://localhost:8080/api/v1/flyingsaucer/html/' + reportId, { responseType: 'text' });
     }
 }
