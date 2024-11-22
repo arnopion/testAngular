@@ -1,9 +1,15 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { Rapport } from '../shared/model/report.model';
-import { reportsFeatureKey } from './reports.reducers';
+import { reportsFeatureKey, ReportsState } from './reports.reducers';
 
-export const selectReports = createFeatureSelector<Array<Rapport>>(reportsFeatureKey);
+export const selectReportFeature = createFeatureSelector<ReportsState>(reportsFeatureKey);
 
-export const selectReportById = (id: number) => createSelector(selectReports, (reports) => {
-    return reports.find(report => report.id === id);
+export const selectReportsList = createSelector(
+    selectReportFeature,
+    (state: ReportsState) => {
+        return state.reports
+    }
+);
+
+export const selectReportById = (id: number) => createSelector(selectReportFeature, (state: ReportsState) => {
+    return state.reports.find(report => report.id === id);
 });

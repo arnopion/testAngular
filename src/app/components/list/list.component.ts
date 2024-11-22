@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 import { map, Observable } from 'rxjs';
 import { Rapport } from '../../shared/model/report.model';
 import { ReportApiActions } from '../../state/reports.actions';
-import { selectReportById, selectReports } from '../../state/reports.selectors';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +12,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { selectReportsList } from '../../state/reports.selectors';
 
 @Component({
   selector: 'app-list',
@@ -40,7 +40,7 @@ export class ListComponent implements OnInit {
     this.store.dispatch(ReportApiActions.retrieveReportList());
     // this.report$ = this.store.select(selectReportById(1));
 
-    this.reports$ = this.store.select(selectReports).pipe(
+    this.reports$ = this.store.select(selectReportsList).pipe(
       map(reports => reports || [])
     );
   }
