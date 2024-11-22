@@ -8,6 +8,10 @@ import { Rapport } from '../model/report.model';
 export class ReportsService {
     constructor(private http: HttpClient) { }
 
+    printReport(reportId: number) {
+        return this.http.get('http://localhost:8080/api/v1/flyingsaucer/print/' + reportId);
+    }
+
     downloadReport(reportId: number) {
         return this.http.get('http://localhost:8080/api/v1/flyingsaucer/pdf/' + reportId, { responseType: 'blob' });
     }

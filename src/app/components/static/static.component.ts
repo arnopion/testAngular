@@ -76,7 +76,7 @@ export class StaticComponent {
   }
 
   printPDF() {
-
+    this.store.dispatch(ReportApiActions.printReportById({ reportId: 1 }));
   }
 
   generateCSV() {

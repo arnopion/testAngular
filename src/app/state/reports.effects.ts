@@ -58,6 +58,33 @@ export const displayErrorAlertDownload = createEffect(
     { functional: true, dispatch: false }
 );
 
+export const printReportById = createEffect(
+    (actions$ = inject(Actions), reportsService = inject(ReportsService)) => {
+        return actions$.pipe(
+            ofType(ReportApiActions.printReportById),
+            exhaustMap(({ reportId }) =>
+                reportsService.printReport(reportId).pipe(
+                    map(() => ReportApiActions.printReportByIdSuccess()),
+                    catchError((error: { message: string }) =>
+                        of(ReportApiActions.printReportByIdFailure({ errorMsg: error.message }))
+                    )
+                )
+            )
+        );
+    },
+    { functional: true }
+)
+
+export const displayErrorAlertPrint = createEffect(
+    () => {
+        return inject(Actions).pipe(
+            ofType(ReportApiActions.printReportByIdFailure),
+            tap(({ errorMsg }) => alert(errorMsg))
+        );
+    },
+    { functional: true, dispatch: false }
+);
+
 export const loadHtmlReportById = createEffect(
     (actions$ = inject(Actions), reportsService = inject(ReportsService)) => {
         return actions$.pipe(

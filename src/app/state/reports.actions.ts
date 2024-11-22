@@ -22,5 +22,9 @@ export const ReportApiActions = createActionGroup({
         'Download Report By Id': props<{ reportId: number }>(),
         'Download Report By Id Success': props<{ blob: Blob }>(),
         'Download Report By Id Failure': props<{ errorMsg: string }>(),
+
+        'Print Report By Id': props<{ reportId: number }>(),
+        'Print Report By Id Success': emptyProps(),
+        'Print Report By Id Failure': props<{ errorMsg: string }>(),
     },
 });
