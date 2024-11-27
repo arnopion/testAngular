@@ -1,0 +1,440 @@
+// -------------------------------------------------------------------------
+// Fonction f_persee_print
+// -------------------------------------------------------------------------
+// CTC : 20/03/2001
+// Charge et imprime chaque liste de pers_impression_liste
+// ab_confimre = TRUE : Affiche un message de confirmation avant impression
+// -------------------------------------------------------------------------
+
+long ll_row,ll_row_find,ret, ll_nb, ll_ret, ret_spool
+string ls_dw_name,ls_dw_param_data,ls_type_param,ls_param,ls_dw_param,ls_liste_libelle,ls_command_data,ls_command,ls_reference, ls_null, ls_aut_mix
+datawindowchild dwc
+any la_param[6]
+integer i,j,cpt_ed, li_cpt
+double ld_liste_id, ld_print_id
+
+LONG 			ll_nb_agent, ll_i
+STRING		ls_filtre 
+BLOB 			lblb
+DATASTORE	lds
+
+Boolean lb_print_one = FALSE
+
+// creer une datastore pour charger la liste à imprimer
+datastore ids_impression_liste
+ids_impression_liste = create datastore
+ids_impression_liste.dataobject = 'd_impression_liste'
+ids_impression_liste.settransobject(sqlca)
+ids_impression_liste.retrieve(as_type_expl)
+ids_impression_liste.sort()
+
+// creer une datastore pour enregister le resultat
+datastore ids_report
+ids_report = create datastore
+
+// creer une datastore pour charger la description des reports
+datastore ids_listes_param
+ids_listes_param = create datastore
+ids_listes_param.dataobject = 'd_liste_type_param'
+ids_listes_param.settransobject(sqlca)
+
+// GLA 20/11/2014
+// Imprimer la liste préliminiare d'exploitation
+//Ca check si la liste a une impression valide. avec un gros if sur chaque row. (check si le user a le droit)
+//Si ls_type_expl n'est pas vide alors on ajoute le code client au nom du document?
+IF ids_impression_liste.rowcount() > 0 THEN
+	String	ls_type_expl
+	setnull(ls_type_expl)
+	for ll_row = 1 to ids_impression_liste.rowcount()
+		if  (ids_impression_liste.getitemstring(ll_row,'status') = '1') &
+			and (date(ids_impression_liste.getitemdatetime(ll_row,'print_date')) <= today()) &	
+			and ((ids_impression_liste.getitemstring(ll_row,'gest_maj') = trim(gu_environ.is_uname)) &
+				or trim(gu_environ.is_uname) = 'PERSEE' &
+				or trim(gu_environ.is_uname) = 'IMPR' &
+				OR SQLCA.PERS_CHECK_USER_CIGER() > 0 ) then		
+			ls_type_expl = ids_impression_liste.getitemstring(ll_row,'type_expl')
+			exit
+		end if	
+	next
+	
+	IF NOT ISNULL(ls_type_expl) THEN 
+		ids_report.dataobject = 'd_prt_impression_preliminaire_expl'
+		ids_report.settransobject(sqlca)
+		ids_report.retrieve(ls_type_expl)
+		
+		IF ids_report.rowcount() > 0 THEN 
+			ret = 1
+			if ab_confirme then
+				ret = Messagebox('Désirez-vous imprimer',"La liste de suivi d' expéditions ?",Question!,YesNo!)		
+			end if
+			if ret = 1 then
+				// Ajout du code_client au nom du document
+				f_persee_print_set_document_name(ids_report, '000-00F')
+				ids_report.print()
+			end if
+		END IF
+	END IF	
+END IF
+
+
+// Parcourir la liste des impressions à effectuer
+// step1: pour chaque rapport (liste) get son nom.
+// step2: update le status a 2.
+// mettre GEST_MAJ a UNAME sinon bug db. SI ca passe, commit db.
+// get la description du rapport.
+// get les parametres du rapport (tokenize |) et cast vers le bon type (S D N)
+// si c'est un bon de paie:
+// ajoute des info specifique dans le nom du fichier, et check si il veut recevoir pdf
+// si pas de bon de paie, alors on mets juste le nom du fichier avec heure, date nb copies etc.
+
+
+cpt_ed = 0
+for ll_row = 1 to ids_impression_liste.rowcount()
+	//STT:25.09.01, autorise à PERSEE d'imprimer les listes de tous
+	if  (ids_impression_liste.getitemstring(ll_row,'status') = '1') &
+		and (date(ids_impression_liste.getitemdatetime(ll_row,'print_date')) <= today()) &	
+		and ((ids_impression_liste.getitemstring(ll_row,'gest_maj') = trim(gu_environ.is_uname)) &
+			or trim(gu_environ.is_uname) = 'PERSEE' &
+			or trim(gu_environ.is_uname) = 'IMPR' &
+			OR SQLCA.PERS_CHECK_USER_CIGER() > 0 ) &
+   then	   
+	   cpt_ed = cpt_ed + 1 
+		// Confirmer l'impression de la liste 
+		ld_liste_id = ids_impression_liste.getitemnumber(ll_row,'liste_id')
+		ld_print_id = ids_impression_liste.getitemnumber(ll_row,'print_id')
+		
+			// rechercher le titre de la liste à imprimer
+			ids_impression_liste.Getchild('liste_id',dwc)
+			dwc.settransobject(sqlca)
+			ll_row_find = dwc.find('pers_liste_liste_id = ' + string(ld_liste_id),1,dwc.rowcount())
+			if ll_row_find > 0 then
+				ls_liste_libelle = dwc.getitemstring(ll_row_find,'pers_liste_lib_libelle')
+				ls_reference = dwc.getitemstring(ll_row_find,'pers_liste_reference')
+			end if
+			
+		if ab_confirme then
+			ret = Messagebox('Désirez-vous imprimer le document suivant ?',ls_liste_libelle,Question!,YesNoCancel!)
+		else
+			// Imprimer d'office
+			ret = 1
+		end if
+		
+		// Imprimer
+		if ret = 1 then
+			// mettre à jour le statut dans ids_impression_liste
+			ids_impression_liste.setitem(ll_row,'status','2')	
+			
+			//STT:27.09.01, il faut positionner GEST_MAJ avec le uname, sinon quand le trigger l'a fait 
+			// après le premier update (status 2), les données en db et en ds sont différentes, 
+			// et on ne sait plus faire d'autre update par la suite.
+			ids_impression_liste.setitem(ll_row, 'gest_maj', trim(gu_environ.is_uname))
+			
+			if ids_impression_liste.update() = 1 then
+				commit;
+			else
+				MessageBox('Erreur', 'Impossible de mettre le statut à jour. Veuillez relancer les impressions')
+				exit
+			end if
+			
+			// rafraichir la fenetre de suivi des impressions
+			//STT:12.10.01, adaptation pour fenêtre 1 client, ou all clients
+			if isvalid(w_print_liste) then
+				w_print_liste.tab_1.tabpage_1.dw_impression_liste.retrieve()
+			elseif isvalid(w_print_liste_all) then
+				w_print_liste_all.tab_1.tabpage_1.dw_impression_liste.retrieve()				
+			end if
+			
+			// charger la description du report
+			ids_listes_param.retrieve(ld_liste_id)
+			
+			if ids_listes_param.rowcount() > 0 then
+				// execution de la commande
+				ret = 0
+				ls_command_data = ids_impression_liste.getitemstring(ll_row,'command_param_data')
+				if not isnull(ls_command_data) then
+					setpointer(HOURGLASS!)
+					ls_command = 'execute ' + ls_command_data
+					execute immediate :ls_command using sqlca;
+					if sqlca.sqlcode <> 0 then
+						if ab_confirme then
+							messagebox('Erreur d~'exécution',sqlca.SQLErrText,Exclamation!)
+						end if
+						ret = -1
+					end if
+					setpointer(ARROW!)
+				end if
+			
+				// rechercher les parametres
+				if ret = 0 then
+					ls_dw_param_data = ids_impression_liste.getitemstring(ll_row,'dw_param_data')
+					
+					// respecter le type d'argument de la datawindow
+					setnull(ls_param)
+					i = 1
+					for j = 1 to ids_listes_param.rowcount()
+						ls_type_param = ids_listes_param.getitemstring(j,'type_param')
+						ls_dw_param = ids_listes_param.getitemstring(j,'dw_param')
+						
+						if ls_dw_param = '1' then
+							ls_param = f_get_token(ls_dw_param_data,'|')
+							if ls_param = '' then
+								setnull(ls_param)
+							end if
+						
+							if ls_type_param = 'S' then
+								la_param[i] = ls_param
+							elseif ls_type_param = 'N' then
+								la_param[i] = dec(ls_param)
+							elseif ls_type_param = 'D' then
+								la_param[i] = datetime(date(ls_param))
+							end if
+							i++
+						end if
+					next
+					
+					
+					// AJOUT MOA 06/07/2011 INT 86169,afin de s'assurer que l'argument optionnel,
+					// Soit bel et bien rempli.
+					if ls_reference ='007-02' then 
+						la_param[i] = 0
+					end if	
+						
+			
+					// retrieve
+					ls_dw_name = ids_listes_param.getitemstring(1,'pers_liste_dw_name')
+					ids_report.dataobject = ls_dw_name
+					ids_report.settransobject(sqlca)	
+					ret = ids_report.retrieve(la_param[1],la_param[2],la_param[3],la_param[4],la_param[5],la_param[6])
+				end if
+					
+				// imprimer et mettre à jour le statut dans ids_impression_liste
+				if ret = -1 then
+					ids_impression_liste.setitem(ll_row,'status','5')	
+				elseif ret = 0 then
+					ids_impression_liste.setitem(ll_row,'status','4')	
+				else
+					IF LEFT(trim(ls_reference),3) ='003' OR LEFT(trim(ls_reference),3) ='006' OR LEFT(trim(ls_reference),6) ='023-81' OR LEFT(trim(ls_reference),6) ='023-82' THEN // un bon de paie ou compte individuel JFB 14/02/2019 ajout des souches fiscales	
+						// Client affecté à UNIFIEDPOST ?
+						IF f_get_parm_txt_smess('UNIFIEDPOST', string(Today())) <> '1' AND f_get_parm_txt_smess('UNIFIEDPOST', string(Today())) <> '2' THEN
+							// Impression Papier
+							// CTC 23.01.2003 : ajout du code_client au nom du document
+							ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference
+								
+							//STT:25.09.01, boucle sur le nombre de copies
+							li_cpt = ids_impression_liste.GetItemNumber(ll_row, 'pers_ex_impressions_nbr_copies')
+							do while li_cpt > 0
+								// KSC - 22/11/2022 - Dev OMS-500
+								// Ajout des informations suivantes dans le nom du fichier : date et heure d'impression (MMdd_hhmm) et numéro de copie (_copyX sauf pour exemplaire original)
+								if li_cpt = 1 then
+									ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm")
+								else
+									ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm") + '_copy' + string(li_cpt)
+								end if
+								ids_report.print()
+								li_cpt -= 1
+							loop
+							
+							// Client affecté à impression PDF ?
+							IF f_get_parm_txt_smess('IMPRESSION_PDF_AGENT', string(Today())) = '1' THEN
+								opensheet(w_print_pdf,gu_environ.iw_frame,0,Original!)
+								w_print_pdf.uo_pdf.is_origine = 'PDF_AGENT'
+								w_print_pdf.uo_pdf.uf_print(ld_liste_id, ids_report, false)
+								ll_nb = 0
+								ll_ret = 0
+								f_persee_print_log(DOUBLE(gu_env_persee.il_code_client), ld_print_id, ld_liste_id, ls_reference, ls_dw_name, DOUBLE(ll_nb), DOUBLE(ll_ret), 'UPOST')								
+								close(w_print_pdf)
+							END IF
+						ELSE
+							lds = create datastore
+							ls_filtre = ''
+							
+							ids_report.getfullstate(lblb)
+							lds.setfullstate(lblb)
+							
+							// Impression PDF-UNIFIEDPOST & CSV pour tout agent	
+							opensheet(w_print_pdf,gu_environ.iw_frame,0,Original!)
+							w_print_pdf.uo_pdf.is_origine = 'UNIFIEDPOST'
+							ret = w_print_pdf.uo_pdf.uf_print(ld_liste_id, ids_report, false)
+							w_print_pdf.uo_pdf.hpb_agent.position = 100
+							// Impression des agents avec OPTIN a non ou sans OPTIN				
+							// 	REM : plus rapide de copier la DW que de défiltrer toute la DW avec un filtre = '' (à cause du retrieve implicite)
+							// Client affecté à impression PDF ?
+							
+							IF f_get_parm_txt_smess('IMPRESSION_PDF_AGENT', string(Today())) = '1' THEN								
+								w_print_pdf.uo_pdf.is_origine = 'PDF_AGENT'
+								w_print_pdf.uo_pdf.ib_test_not_optin = TRUE
+								ret = w_print_pdf.uo_pdf.uf_print(ld_liste_id, lds, false)
+							END IF
+							w_print_pdf.uo_pdf.hpb_agent.position = 100
+							IF ret >= 0 THEN
+								// Impression Papier pour les agents sauf ceux qui ont validé l'optin							
+								w_print_pdf.uo_pdf.ids_agents.setfilter("papier = 1")							
+
+								w_print_pdf.uo_pdf.ids_agents.filter() 
+								ll_nb_agent = w_print_pdf.uo_pdf.ids_agents.rowcount()
+								
+								IF ll_nb_agent > 0 THEN
+									FOR ll_i = 1 TO ll_nb_agent
+										ls_filtre += STRING(w_print_pdf.uo_pdf.ids_agents.object.ag_id[ll_i]) + ','
+									NEXT	
+									ls_filtre =  w_print_pdf.uo_pdf.is_champ_agent + " IN (" + MID(ls_filtre,1,(LEN(ls_filtre) - 1)) + ")" 									
+									ids_report.setfilter(ls_filtre)
+									ids_report.filter()
+									ids_report.groupcalc()
+									ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference
+									li_cpt = ids_impression_liste.GetItemNumber(ll_row, 'pers_ex_impressions_nbr_copies')
+									ll_nb = li_cpt
+									DO WHILE li_cpt > 0
+										// KSC - 22/11/2022 - Dev OMS-500
+										// Ajout des informations suivantes dans le nom du fichier : date et heure d'impression (MMdd_hhmm) et numéro de copie (_copyX sauf pour exemplaire original)
+										if li_cpt = 1 then
+											ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm")
+										else
+											ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm") + '_copy' + string(li_cpt)
+										end if
+										ll_ret = ids_report.print()
+										lb_print_one = TRUE
+										li_cpt -= 1
+										f_persee_print_log(DOUBLE(gu_env_persee.il_code_client), ld_print_id, ld_liste_id, ls_reference, ls_dw_name, DOUBLE(ll_nb), DOUBLE(ll_ret), 'PDF')							
+									LOOP								
+								END IF		
+
+							ELSE
+
+								ids_impression_liste.setitem(ll_row,'status','5')	
+								MessageBox('Erreur', "Le souci de configuration des PDF a rendu impossible l'impression papier des documents")
+							END IF
+							DESTROY lds
+							close(w_print_pdf)
+						END IF	
+						
+					ELSE
+						// CTC 23.01.2003 : ajout du code_client au nom du document
+						ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference		
+						
+						//STT:25.09.01, boucle sur le nombre de copies
+						li_cpt = ids_impression_liste.GetItemNumber(ll_row, 'pers_ex_impressions_nbr_copies')
+						ll_nb = li_cpt
+						do while li_cpt > 0
+							// KSC - 22/11/2022 - Dev OMS-500
+							// Ajout des informations suivantes dans le nom du fichier : date et heure d'impression (MMdd_hhmm) et numéro de copie (_copyX sauf pour exemplaire original)
+							if li_cpt = 1 then
+								ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm")
+							else
+								ids_report.object.datawindow.print.documentname= 'Client_+' + string(gu_env_persee.il_code_client) + "+_" + string(ll_row,"00") + '_' + ls_reference + '_' + string(Today(), "MMdd_hhmm") + '_copy' + string(li_cpt) 
+							end if
+							ll_ret = ids_report.print()
+							lb_print_one = TRUE
+							li_cpt -= 1							
+							f_persee_print_log(DOUBLE(gu_env_persee.il_code_client), ld_print_id, ld_liste_id, ls_reference, ls_dw_name, DOUBLE(ll_nb), DOUBLE(ll_ret), 'PRT')							
+						loop
+						//fin STT
+					END IF
+					ids_impression_liste.setitem(ll_row,'status','3')	
+				end if
+					
+				ids_impression_liste.setitem(ll_row,'date_exec',today())
+				
+				//STT:27.09.01, si on sait pas updater la table on sort, sinon on ne sait plus le status des lignes.
+				if ids_impression_liste.update() = 1 then
+					commit;
+				else
+					MessageBox('Erreur', 'Impossible de mettre le statut à jour. Veuillez relancer les impressions')
+					exit
+				end if
+				
+				
+				// rafraichir la fenetre de suivi des impressions
+				//STT:12.10.01, adaptation pour fenêtre 1 client, ou all clients
+				if isvalid(w_print_liste) then
+					w_print_liste.tab_1.tabpage_1.dw_impression_liste.retrieve()
+				elseif isvalid(w_print_liste_all) then
+					w_print_liste_all.tab_1.tabpage_1.dw_impression_liste.retrieve()				
+				end if
+			end if
+			
+		// passer au suivant
+		elseif ret = 2 then
+			ids_impression_liste.setitem(ll_row,'status','0')
+			ids_impression_liste.update()
+			commit;
+				
+			// rafraichir la fenetre de suivi des impressions
+			//STT:12.10.01, adaptation pour fenêtre 1 client, ou all clients
+			if isvalid(w_print_liste) then
+				w_print_liste.tab_1.tabpage_1.dw_impression_liste.retrieve()
+			elseif isvalid(w_print_liste_all) then
+				w_print_liste_all.tab_1.tabpage_1.dw_impression_liste.retrieve()				
+			end if
+		
+		// abandonner les impressions
+		elseif ret = 3 then
+			exit
+		end if
+	end if
+next
+
+//JFB - PERSEE 291 contrôle mise en boîte
+SetNull(ls_null)
+ls_aut_mix = gu_env_persee.ids_client.getitemstring(1,"aut_mix") 
+if cpt_ed > 0 and (ls_aut_mix = 'B' or ls_aut_mix = 'C') and (gu_environ.is_uname = 'PERSEE' or gu_environ.is_uname = 'IMPR' or sqlca.pers_check_user_ciger() = 1) then
+	//on affiche un message pour demander s'il faut la mise en boîte
+	ret = Messagebox(gu_environ.uf_get_message('WTw_print_liste'),gu_environ.uf_get_message('w_print_liste_msg_mise_boite'),Question!,YesNo!)
+	if ret = 1 then
+		sqlca.PERS_SFS_IMPR_ATRAITER( DOUBLE(gu_env_persee.il_code_client), ls_null)
+	end if
+end if
+
+// Imprimer la liste de suivi des impressions
+ids_report.dataobject = 'd_prt_impressions'
+ids_report.settransobject(sqlca)
+ids_report.retrieve()
+if ids_report.rowcount() > 0 and cpt_ed > 0 then
+	ret = 1
+	if ab_confirme then
+		ret = Messagebox('Désirez-vous imprimer','La liste de suivi des impressions ?',Question!,YesNo!)		
+	end if
+	if ret = 1 then
+		// CTC 23.01.2003 : ajout du code_client au nom du document
+		f_persee_print_set_document_name(ids_report, '000-00L')
+					
+		ids_report.print()
+	end if
+	// PAB 31.01.2014 - Lors d'impression par CTI, après chaque client on attend que le spool se vide
+	if trim(gu_environ.is_uname) = 'IMPR' then
+		ret_spool = Messagebox("Avant de passer au client suivant","Merci d'attendre que le spool se vide.",Question!,OkCancel!)
+	end if
+end if
+
+if cpt_ed > 0 and lb_print_one = TRUE then
+	String ls_name
+	datastore ids_ex_users_imp
+	ids_ex_users_imp = create datastore
+	ids_ex_users_imp.dataobject = 'd_ex_users_imp_ds'
+	ids_ex_users_imp.settransobject(sqlca)
+	ids_ex_users_imp.retrieve(gu_env_persee.il_code_client)
+
+	ls_name = ids_ex_users_imp.Object.DataWindow.Printer
+	
+	if ids_ex_users_imp.rowcount() > 0 then
+		for ll_i = 1 to ids_ex_users_imp.Rowcount()
+			
+			if (ids_ex_users_imp.getitemnumber(ll_i,"prive") = 1 and ids_ex_users_imp.getitemstring(ll_i,"gest_maj") = gu_environ.is_uname) or (ids_ex_users_imp.getitemnumber(ll_i,"prive") = 0 and SQLCA.pers_check_user_ciger() = 1) then 
+				
+				sqlca.PERS_SEND_MAIL(ids_ex_users_imp.getitemstring(ll_i,"adr_mail"),"",string(today(),'dd/mm/yyyy')+ " " + String(Now(), "hh:mm") + " - Client : " + string(gu_env_persee.il_code_client) + " - Impression des documents de paie demandée par "+gu_environ.is_uname+" terminée sur l'imprimante : "+ls_name, gu_environ.uf_get_message('WTw_print_liste'))
+			end if   
+
+		next
+	end if
+	
+	destroy(ids_ex_users_imp)
+end if
+
+if ret_spool = 2 then
+	halt close
+end if
+
+// detruire les datastore
+destroy(ids_impression_liste)
+destroy(ids_listes_param)
+destroy(ids_report)

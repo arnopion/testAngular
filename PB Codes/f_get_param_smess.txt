@@ -1,0 +1,49 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+//	Fonction:  f_get_parm_txt_smess erg : 15-09-2005
+//
+//	Description: Cette fonction renvoie une string avec la valeur (TXT) du 
+//              paramètre MNEMO passé en argument mais contrairement à f_get_parm_txt
+//              n'affiche pas de message d'erreur si le param n'existe pas !!!
+//              (valable à la date <as_date_valid>)
+//	Arguments:
+//		as_mnemo:   le MNEMO pour lequel on recherche la valeur
+//		as_date_valid:	la date de validité (> DATE_DEB_VAL et < DATE_FIN_VAL)
+//	Retour:  string
+//	   - la valeur sous forme de string du MNEMO valable en date <as_date_valid>
+//	   - '-1' = erreur (si valeur du MNEMO est NULL ou MNEMO n'as pas de valeur pour 
+//      la date de validité donnée)
+//
+//////////////////////////////////////////////////////////////////////////////
+//
+//	Interventions : 
+// MAC: 07/10/1998 : création
+// PHH: 23/06/2000 : optimisation + message si param non trouvé
+//
+//////////////////////////////////////////////////////////////////////////////
+string ls_ret, ls_mnemo, ls_search, ls_msg
+long ll_maxrow, ll_foundrow
+
+as_date_valid = trim(as_date_valid)
+IF NOT isdate(as_date_valid) THEN
+	IF as_date_valid = '' THEN
+		as_date_valid = string(Today(), 'dd/mm/yyyy')
+	ELSE
+		RETURN "-1"
+	END IF
+END IF
+
+ls_mnemo = upper(trim(as_mnemo))
+ls_ret = '-1'
+ll_maxrow = gu_env_persee.ids_cli_tparm.RowCount()
+ls_search = "mnemo = '"+ ls_mnemo +"' and date_deb_valid <= Date('" + as_date_valid
+ls_search = ls_search + "') and (date_fin_valid >= Date('" + as_date_valid + "') or isnull(date_fin_valid))"
+ll_foundrow = gu_env_persee.ids_cli_tparm.find(ls_search, 1, ll_maxrow)
+IF ll_foundrow > 0 THEN
+	ls_ret = trim(gu_env_persee.ids_cli_tparm.getItemString(ll_foundrow,'val_txt'))
+	IF ls_ret = '' THEN
+		ls_ret = '-1'
+	END IF
+END IF
+
+RETURN ls_ret

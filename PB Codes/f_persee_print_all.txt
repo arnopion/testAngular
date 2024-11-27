@@ -1,0 +1,92 @@
+long ll_client_trt, ll_cur_client, ll_row, ll_cpt, ll_ret
+double ld_client_save
+string ls_client_name, ls_null
+string ls_titre, ls_message
+
+SetNull(ls_null)
+
+ls_titre = gu_environ.uf_Get_Message('PrtListesTitre')
+ls_message = gu_environ.uf_Get_Message('PrtListesMsg')
+
+// creer une datastore pour charger la liste à imprimer
+datastore ids_impression_liste
+ids_impression_liste = create datastore
+ids_impression_liste.dataobject = 'd_impression_liste_all'
+ids_impression_liste.settransobject(sqlca)
+ids_impression_liste.retrieve(ls_null)
+ids_impression_liste.SetFilter(as_filtre_cti)
+ids_impression_liste.Filter()
+ids_impression_liste.sort()
+
+ll_client_trt = 0
+ll_cpt = 0
+ld_client_save = gu_env_persee.il_code_client
+ls_client_name = gu_env_persee.is_libelle_client 
+for ll_row = 1 to ids_impression_liste.rowcount()
+	ll_cur_client = ids_impression_liste.GetItemNumber(ll_row, 'code_client')
+	if not ll_cur_client = ll_client_trt then
+		ll_client_trt =ll_cur_client
+		ll_cpt += 1
+		gu_env_persee.il_code_client = ll_client_trt
+		gu_env_persee.is_libelle_client = 'Client n° ' + string(ll_client_trt)
+		if gu_env_persee.uf_ini_parms_client() <> 1 then
+			gu_mb.uf_fatalerror_h ('ClientParamsError')
+		else
+			f_persee_print(ab_confirme, ls_null)		
+		end if
+	end if
+next
+
+// CTC : 21.01.2003 
+// Remettre le client de départ dans gu_env_persee.il_code_client !!
+gu_env_persee.il_code_client = ld_client_save 
+gu_env_persee.is_libelle_client = ls_client_name
+if gu_env_persee.uf_ini_parms_client() <> 1 then
+	gu_mb.uf_fatalerror_h ('ClientParamsError')
+end if
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////::
+
+
+DECLARE variables:
+    long ll_client_trt, ll_cur_client, ll_row, ll_cpt, ll_ret
+    double ld_client_save
+    string ls_client_name, ls_null
+    string ls_titre, ls_message
+
+SET ls_null to NULL
+
+ls_titre = GetMessage('PrtListesTitre')
+ls_message = GetMessage('PrtListesMsg')
+
+CREATE DataStore ids_impression_liste
+SET ids_impression_liste.dataobject to 'd_impression_liste_all'
+SET ids_impression_liste.transaction to sqlca
+RETRIEVE ids_impression_liste with ls_null
+SET ids_impression_liste filter to as_filtre_cti
+APPLY filter to ids_impression_liste
+SORT ids_impression_liste
+
+INITIALIZE ll_client_trt to 0
+INITIALIZE ll_cpt to 0
+SAVE current client code and name to ld_client_save and ls_client_name
+
+FOR each row ll_row in ids_impression_liste
+    ll_cur_client = GET client code from ids_impression_liste at ll_row
+    IF ll_cur_client is not equal to ll_client_trt THEN
+        UPDATE ll_client_trt to ll_cur_client
+        INCREMENT ll_cpt by 1
+        UPDATE global client code and name
+        IF InitializeClientParams() not equal to 1 THEN
+            CALL FatalError('ClientParamsError')
+        ELSE
+            CALL PrintFunction(ab_confirme, ls_null)
+        END IF
+    END IF
+NEXT
+
+RESTORE original client code and name to global environment
+IF InitializeClientParams() not equal to 1 THEN
+    CALL FatalError('ClientParamsError')
+END IF
